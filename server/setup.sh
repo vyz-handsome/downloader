@@ -16,7 +16,7 @@ curl -fsSL "$RAW/package.json" -o "$DIR/package.json"
 
 echo "==> Memasang scrapr (bisa beberapa menit)"
 cd "$DIR"
-npm install --omit=dev --no-audit --no-fund
+npm install --omit=dev --omit=optional --no-audit --no-fund
 
 echo "==> Mengizinkan app Downloader menyalakan server"
 mkdir -p "$HOME/.termux"

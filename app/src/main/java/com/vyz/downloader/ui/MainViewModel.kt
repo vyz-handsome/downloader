@@ -29,6 +29,8 @@ private val KNOWN_HOSTS = listOf(
     "tiktok.com", "instagram.com", "instagr.am", "threads.net", "threads.com", "facebook.com", "fb.watch", "fb.com",
     "youtube.com", "youtu.be", "twitter.com", "x.com", "pinterest.", "pin.it", "spotify.com", "spotify.link",
     "soundcloud.com", "music.apple.com", "bandcamp.com", "bilibili.com", "bilibili.tv", "b23.tv", "douyin.com",
+    "pixiv.net", "xiaohongshu.com", "xhslink.com", "reddit.com", "redd.it", "terabox", "mediafire.com", "pixeldrain.com",
+    "catbox.moe", "drive.google.com", "krakenfiles.com", "sfile.",
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {

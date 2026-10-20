@@ -48,7 +48,9 @@ object DownloadEngine {
             val body = resp.body ?: throw IOException("Respons kosong")
             val total = body.contentLength()
             val mime = pickMime(resp.header("Content-Type"), task)
-            val name = buildName(task, mime)
+            val name = headerFilename(resp.header("Content-Disposition"))
+                ?.takeIf { task.type.equals("file", ignoreCase = true) }
+                ?: buildName(task, mime)
             val dest = openDestination(ctx, settings, name, mime)
             try {
                 dest.out.use { out ->
@@ -89,6 +91,7 @@ object DownloadEngine {
         return when (task.type.lowercase()) {
             "audio" -> "audio/mpeg"
             "image", "photo" -> "image/jpeg"
+            "file" -> "application/octet-stream"
             else -> "video/mp4"
         }
     }
@@ -99,8 +102,21 @@ object DownloadEngine {
         if (base.isBlank()) base = "download"
         val q = clean(task.quality).take(20)
         if (q.isNotBlank()) base = "$base ($q)"
-        val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "bin"
+        val urlExt = task.url.substringBefore('?').substringAfterLast('.', "").lowercase()
+        val ext = if (mime == "application/octet-stream") {
+            if (urlExt.length in 2..5 && urlExt.all { it.isLetterOrDigit() }) urlExt else "bin"
+        } else {
+            MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "bin"
+        }
         return "$base.$ext"
+    }
+
+    private fun headerFilename(cd: String?): String? {
+        if (cd == null) return null
+        val m = Regex("filename\\*?=(?:UTF-8'')?\"?([^\";]+)\"?", RegexOption.IGNORE_CASE).find(cd) ?: return null
+        val raw = runCatching { java.net.URLDecoder.decode(m.groupValues[1].trim(), "UTF-8") }.getOrNull() ?: return null
+        val clean = raw.replace(Regex("[\\\\/:*?\"<>|\\r\\n]"), " ").trim()
+        return clean.ifBlank { null }
     }
 
     private fun openDestination(ctx: Context, settings: Settings, name: String, mime: String): Dest {

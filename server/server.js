@@ -26,26 +26,36 @@ try {
   console.error("[server] gagal memuat scrapr:", e.message);
 }
 
-// Hanya scraper ringan (tanpa Chrome/Puppeteer/Playwright).
-// Urutan = urutan fallback.
+// Hanya scraper ringan (tanpa Chrome/Puppeteer/Playwright). Urutan = urutan fallback.
+// Scraper yang butuh browser (tiktok.savetik, facebook.fdown, instagram.snapinsta) sengaja tidak dipakai.
 const CHAINS = {
-  tiktok: [["tiktok", "tiktokio"], ["tiktok", "snaptik"], ["tiktok", "ssstik"]],
-  instagram: [["instagram", "downreels"], ["instagram", "indown"]],
+  tiktok: [["tiktok", "tiktokio"], ["tiktok", "snaptik"], ["tiktok", "ssstik"], ["tiktok", "tikdownloader"]],
+  instagram: [["instagram", "indown"], ["instagram", "direct"], ["instagram", "snapsave"]],
   threads: [["threads", "threadster"]],
   facebook: [["facebook", "snapsave"]],
-  youtube: [["youtube", "ytmp3"]],
-  twitter: [["twitter", "tvd"], ["twitter", "tweeload"]],
-  pinterest: [["pinterest", "pindown"]],
-  spotify: [["spotify", "spotmate"], ["spotify", "spotidown"]],
+  youtube: [["youtube", "ytmp3"], ["youtube", "ytmp3gg"]],
+  twitter: [["twitter", "tvd"], ["twitter", "direct"], ["twitter", "tweeload"], ["twitter", "savetwt"]],
+  pinterest: [["pinterest", "pindown"], ["pinterest", "direct"]],
+  spotify: [["spotify", "spotmate"], ["spotify", "spotidown"], ["spotify", "soundloaders"], ["spotify", "spotisaver"]],
   soundcloud: [["soundcloud", "klickaud"]],
   applemusic: [["applemusic", "aplmate"]],
-  bandcamp: [["bandcamp", "bandcampdownloader"]],
-  bilibili: [["bilibili", "snapwc"]],
+  bandcamp: [["bandcamp", "bandcampdownloader"], ["bandcamp", "direct"]],
+  bilibili: [["bilibili", "direct"]],
   douyin: [["douyin", "direct"]],
+  pixiv: [["pixiv", "ajax"]],
+  rednote: [["rednote", "direct"]],
+  reddit: [["reddit", "rapidsave"]],
+  terabox: [["terabox", "sechno"]],
+  mediafire: [["resolver", "mediafire"]],
+  pixeldrain: [["resolver", "pixeldrain"]],
+  catbox: [["resolver", "catbox"]],
+  gdrive: [["resolver", "gdrive"]],
+  krakenfiles: [["resolver", "krakenfiles"]],
+  sfile: [["resolver", "sfile"]],
 };
 
 const HOSTS = [
-  [/(^|\.)tiktok\.com$|(^|\.)vt\.tiktok\.com$|(^|\.)vm\.tiktok\.com$/, "tiktok"],
+  [/(^|\.)tiktok\.com$/, "tiktok"],
   [/(^|\.)instagram\.com$|(^|\.)instagr\.am$/, "instagram"],
   [/(^|\.)threads\.(net|com)$/, "threads"],
   [/(^|\.)facebook\.com$|(^|\.)fb\.watch$|(^|\.)fb\.com$/, "facebook"],
@@ -53,11 +63,21 @@ const HOSTS = [
   [/(^|\.)twitter\.com$|(^|\.)x\.com$|(^|\.)t\.co$/, "twitter"],
   [/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/, "pinterest"],
   [/(^|\.)spotify\.com$|(^|\.)spotify\.link$/, "spotify"],
-  [/(^|\.)soundcloud\.com$|(^|\.)on\.soundcloud\.com$/, "soundcloud"],
+  [/(^|\.)soundcloud\.com$/, "soundcloud"],
   [/(^|\.)music\.apple\.com$/, "applemusic"],
   [/(^|\.)bandcamp\.com$/, "bandcamp"],
   [/(^|\.)bilibili\.(com|tv)$|(^|\.)b23\.tv$/, "bilibili"],
   [/(^|\.)douyin\.com$|(^|\.)iesdouyin\.com$/, "douyin"],
+  [/(^|\.)pixiv\.net$/, "pixiv"],
+  [/(^|\.)xiaohongshu\.com$|(^|\.)xhslink\.com$/, "rednote"],
+  [/(^|\.)reddit\.com$|(^|\.)redd\.it$/, "reddit"],
+  [/(^|\.)(1024)?terabox(app)?\.com$|(^|\.)teraboxapp\.com$|(^|\.)terabox\.link$/, "terabox"],
+  [/(^|\.)mediafire\.com$/, "mediafire"],
+  [/(^|\.)pixeldrain\.com$/, "pixeldrain"],
+  [/(^|\.)catbox\.moe$/, "catbox"],
+  [/(^|\.)drive\.google\.com$|(^|\.)docs\.google\.com$/, "gdrive"],
+  [/(^|\.)krakenfiles\.com$/, "krakenfiles"],
+  [/(^|\.)sfile\.(mobi|co)$/, "sfile"],
 ];
 
 function platformOf(rawUrl) {
@@ -103,7 +123,7 @@ function normalize(r) {
       url: d.url,
       type: d.type || out.type,
       quality: String(d.quality || d.label || ""),
-      title: (extra && extra.title) || "",
+      title: (extra && extra.title) || d.title || d.name || d.filename || "",
     });
   };
   if (Array.isArray(r.downloads)) r.downloads.forEach((d) => push(d));
