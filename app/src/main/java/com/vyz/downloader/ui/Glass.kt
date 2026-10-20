@@ -32,8 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.haze
 
 val GlassShape = RoundedCornerShape(28.dp)
 val PillShape = RoundedCornerShape(50)
@@ -54,7 +54,7 @@ fun AuroraBackground(haze: HazeState, modifier: Modifier = Modifier) {
     Box(
         modifier
             .fillMaxSize()
-            .hazeSource(haze)
+            .haze(haze)
             .background(Brush.verticalGradient(listOf(g.bgTop, g.bgBottom)))
             .drawWithContent {
                 drawContent()
@@ -82,7 +82,7 @@ fun Modifier.glass(haze: HazeState, shape: Shape = GlassShape): Modifier {
     val g = LocalGlass.current
     return this
         .clip(shape)
-        .hazeEffect(state = haze, style = g.hazeStyle)
+        .hazeChild(state = haze, style = g.hazeStyle)
         .drawWithContent {
             drawContent()
             drawRect(
