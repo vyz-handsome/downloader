@@ -1,0 +1,11 @@
+{
+  "name": "downloader-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server lokal (Termux) untuk app Downloader, membungkus library scrapr",
+  "main": "server.js",
+  "engines": { "node": ">=16" },
+  "dependencies": {
+    "scrapr": "git+https://github.com/coflyn/scrapr.git"
+  }
+}
