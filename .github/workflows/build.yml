@@ -21,7 +21,13 @@ jobs:
           gradle-version: 8.10.2
 
       - name: Build debug APK
-        run: gradle assembleDebug --stacktrace
+        run: |
+          set +e
+          gradle assembleDebug --stacktrace > build.log 2>&1
+          code=$?
+          # tampilkan error kompilasi sebagai anotasi supaya mudah dibaca
+          grep -E "^e: |What went wrong|error:|Could not|Unresolved|FAILED" -A3 build.log | head -80 | sed 's/%/%25/g' | while IFS= read -r l; do echo "::error::$l"; done
+          exit $code
 
       - uses: actions/upload-artifact@v4
         with:
