@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -32,24 +33,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 
 val GlassShape = RoundedCornerShape(28.dp)
 val PillShape = RoundedCornerShape(50)
 
-/** Latar bergradasi dengan bola warna yang bergerak pelan. Ini yang di-blur oleh kaca di atasnya. */
+/**
+ * Latar putih dengan bayangan abu yang bergerak sangat pelan.
+ * Inilah yang di-blur oleh kaca di atasnya, jadi efek kacanya tetap terlihat di tema putih.
+ */
 @Composable
 fun AuroraBackground(haze: HazeState, modifier: Modifier = Modifier) {
     val g = LocalGlass.current
     val t = rememberInfiniteTransition(label = "aurora")
     val a by t.animateFloat(
         0f, 1f,
-        infiniteRepeatable(tween(14000, easing = LinearEasing), RepeatMode.Reverse), label = "a",
+        infiniteRepeatable(tween(16000, easing = LinearEasing), RepeatMode.Reverse), label = "a",
     )
     val b by t.animateFloat(
         0f, 1f,
-        infiniteRepeatable(tween(19000, easing = LinearEasing), RepeatMode.Reverse), label = "b",
+        infiniteRepeatable(tween(22000, easing = LinearEasing), RepeatMode.Reverse), label = "b",
     )
     Box(
         modifier
@@ -63,33 +67,43 @@ fun AuroraBackground(haze: HazeState, modifier: Modifier = Modifier) {
                 fun blob(color: Color, cx: Float, cy: Float, r: Float) {
                     drawCircle(
                         Brush.radialGradient(
-                            listOf(color.copy(alpha = if (g.dark) 0.75f else 0.8f), Color.Transparent),
+                            listOf(color.copy(alpha = 0.85f), Color.Transparent),
                             center = Offset(cx, cy), radius = r,
                         ),
                         radius = r, center = Offset(cx, cy),
                     )
                 }
-                blob(g.blobs[0], w * (0.2f + 0.5f * a), h * (0.15f + 0.1f * b), w * 0.8f)
-                blob(g.blobs[1], w * (0.85f - 0.5f * b), h * (0.5f + 0.15f * a), w * 0.75f)
-                blob(g.blobs[2], w * (0.3f + 0.3f * b), h * (0.9f - 0.12f * a), w * 0.85f)
+                blob(g.blobs[0], w * (0.15f + 0.5f * a), h * (0.12f + 0.08f * b), w * 0.7f)
+                blob(g.blobs[1], w * (0.9f - 0.45f * b), h * (0.5f + 0.1f * a), w * 0.65f)
+                blob(g.blobs[2], w * (0.25f + 0.3f * b), h * (0.92f - 0.1f * a), w * 0.75f)
             }
     )
 }
 
-/** Permukaan kaca: blur latar + tint + kilau atas + garis tepi bergradasi. */
+/**
+ * Permukaan kaca: bayangan lembut, blur latar, tint putih, kilau di atas,
+ * bayangan tipis di bawah (kesan tebal), dan tepi bening yang terang di sudut kiri atas.
+ */
 @Composable
-fun Modifier.glass(haze: HazeState, shape: Shape = GlassShape): Modifier {
+fun Modifier.glass(haze: HazeState, shape: Shape = GlassShape, elevation: Int = 14): Modifier {
     val g = LocalGlass.current
     return this
+        .shadow(elevation.dp, shape, ambientColor = g.shadowAmbient, spotColor = g.shadowSpot)
         .clip(shape)
         .hazeChild(state = haze, style = g.hazeStyle)
         .drawWithContent {
             drawContent()
+            // kilau lembut dari atas
+            drawRect(Brush.verticalGradient(listOf(g.sheen, Color.Transparent), endY = size.height * 0.5f))
+            // ketebalan di tepi bawah
             drawRect(
-                Brush.verticalGradient(listOf(g.sheen, Color.Transparent), endY = size.height * 0.55f)
+                Brush.verticalGradient(
+                    listOf(Color.Transparent, g.shade),
+                    startY = size.height * 0.55f, endY = size.height,
+                )
             )
         }
-        .border(BorderStroke(1.dp, Brush.linearGradient(listOf(g.borderStart, g.borderEnd))), shape)
+        .border(BorderStroke(1.2.dp, Brush.linearGradient(listOf(g.borderStart, g.borderEnd))), shape)
 }
 
 @Composable
@@ -113,10 +127,16 @@ fun GlassButton(
     onClick: () -> Unit,
 ) {
     val g = LocalGlass.current
-    val bg = if (primary) Modifier.background(g.accent.copy(alpha = 0.55f)) else Modifier
+    val fg = when {
+        primary && enabled -> g.onAccent
+        primary -> g.onAccent.copy(alpha = 0.7f)
+        enabled -> g.text
+        else -> g.subtext
+    }
+    val bg = if (primary) Modifier.background(g.accent.copy(alpha = if (enabled) 0.9f else 0.35f)) else Modifier
     Box(
         modifier
-            .glass(haze, PillShape)
+            .glass(haze, PillShape, elevation = if (primary) 10 else 6)
             .then(bg)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 12.dp),
@@ -124,14 +144,9 @@ fun GlassButton(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) {
-                Icon(icon, null, tint = if (enabled) g.text else g.subtext, modifier = Modifier.padding(end = 8.dp))
+                Icon(icon, null, tint = fg, modifier = Modifier.padding(end = 8.dp))
             }
-            Text(
-                text,
-                color = if (enabled) g.text else g.subtext,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp,
-            )
+            Text(text, color = fg, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
         }
     }
 }

@@ -54,6 +54,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -164,7 +165,7 @@ private fun NavBar(vm: MainViewModel, haze: HazeState) {
 @Composable
 private fun NavItem(label: String, icon: ImageVector, selected: Boolean, onClick: () -> Unit) {
     val g = LocalGlass.current
-    val bg = if (selected) g.accent.copy(alpha = 0.35f) else androidx.compose.ui.graphics.Color.Transparent
+    val bg = if (selected) g.fillSelected else Color.Transparent
     Row(
         Modifier
             .clip(PillShape)
@@ -206,9 +207,9 @@ private fun OnboardingScreen(vm: MainViewModel, haze: HazeState) {
         StepCard(haze, "2", "Jalankan perintah di Termux", "Salin, buka Termux, tempel, lalu tekan Enter. Tunggu sampai muncul tulisan SELESAI.", false) {
             Box(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-                    .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.35f)).padding(12.dp)
+                    .background(g.fill).padding(12.dp)
             ) {
-                Text(SETUP_COMMAND, color = androidx.compose.ui.graphics.Color(0xFFB7F7C8), fontSize = 12.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                Text(SETUP_COMMAND, color = g.text, fontSize = 12.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 GlassButton(if (copied) "Tersalin" else "Salin perintah", haze, icon = Icons.Rounded.ContentPaste, primary = true) {
@@ -307,8 +308,8 @@ private fun HomeScreen(vm: MainViewModel, haze: HazeState) {
                         singleLine = true,
                         shape = RoundedCornerShape(18.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.18f),
-                            unfocusedContainerColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.12f),
+                            focusedContainerColor = g.fill,
+                            unfocusedContainerColor = g.fill,
                             focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
                             unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
                             focusedTextColor = g.text,
@@ -381,7 +382,7 @@ private fun HomeScreen(vm: MainViewModel, haze: HazeState) {
                             val on = vm.selected.contains(i)
                             Row(
                                 Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                                    .background(if (on) g.accent.copy(alpha = 0.30f) else androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.10f))
+                                    .background(if (on) g.fillSelected else g.fill)
                                     .clickable { vm.toggle(i) }.padding(horizontal = 14.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -581,7 +582,7 @@ private fun SaveRow(title: String, sub: String, selected: Boolean, onClick: () -
     val g = LocalGlass.current
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-            .background(if (selected) g.accent.copy(alpha = 0.30f) else androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.10f))
+            .background(if (selected) g.fillSelected else g.fill)
             .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
